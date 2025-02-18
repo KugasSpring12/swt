@@ -7,7 +7,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html>
+<html lang="vi" xml:lang="vi">
     <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -58,10 +58,10 @@
                                             <td>${Category.name}</td>
                                             <td>${Category.description}</td>
                                             <td >
-                                                <a style="color: green" onclick="CategoryInfo('${Category.categoryId}', '${Category.name}', '${Category.description}')" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit"> 
-                                                    <i class="lni lni-pencil"></i></a>
-                                                    <a style="color: red" onclick="CategoryInfo('${Category.categoryId}', '${Category.name}', '${Category.description}')" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal" title="Delete">
-                                                    <i class="lni lni-trash-can"></i></a>
+                                                <button style="color: green" onclick="CategoryInfo('${Category.categoryId}', '${Category.name}', '${Category.description}')" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit"> 
+                                                    <i class="lni lni-pencil"></i></button>>
+                                                <button style="color: red" onclick="CategoryInfo('${Category.categoryId}', '${Category.name}', '${Category.description}')" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal" title="Delete">
+                                                    <i class="lni lni-trash-can"></i></button>
                                             </td>
                                         </c:forEach>
                                     </tr>
@@ -84,14 +84,14 @@
                         </div>
                         <div class="modal-body">					
                             <div class="form-group">
-                                <label>Name</label>
-                                <input name="name" type="text" class="form-control" required>
+                                <label for="name">Name</label>
+                                <input id="name" name="name" type="text" class="form-control" required>
                             </div>
                         </div>
                         <div class="modal-body">					
                             <div class="form-group">
-                                <label>Description</label>
-                                <input name="description" type="text" class="form-control" required>
+                                <label for="description">Description</label>
+                                <input id="description" name="description" type="text" class="form-control" required>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -115,10 +115,10 @@
                         <div class="modal-body">					
                             <div class="form-group">
                                 <input type="hidden" name="category_id" id="CategoryIdInput"/>
-                                <label>Name</label>
-                                <input name="re_name" type="text" class="form-control" id="CategoryNameInput" required>
-                                <label>Description</label>
-                                <input name="re_description" type="text" class="form-control" id="CategoryDescriptionInput" required>
+                                <label for="CategoryNameInput">Name</label>
+                                <input id="CategoryNameInput" name="re_name" type="text" class="form-control" required>
+                                <label for="CategoryDescriptionInput">Description</label>
+                                <input id="CategoryDescriptionInput" name="re_description" type="text" class="form-control" required>
                             </div>
                         </div>
                         <div class="modal-footer">
