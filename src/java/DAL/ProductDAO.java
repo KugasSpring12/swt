@@ -4,16 +4,19 @@
  */
 package DAL;
 
+import java.beans.Statement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import model.Category;
 import model.Images;
 import model.Product;
 import model.Suppliers;
 import model.Units;
+import java.sql.Timestamp;
 
 /**
  *
@@ -46,23 +49,23 @@ public class ProductDAO extends DBcontext {
                 product.setWeight(rs.getObject("weight") != null ? rs.getInt("weight") : null);
                 product.setQuantity(rs.getInt("quantity"));
                 CategoryDAO categoryDAO = new CategoryDAO();
-            SuppliersDAO supplierDAO = new SuppliersDAO();
-            UnitsDAO unitDAO = new UnitsDAO();
+                SuppliersDAO supplierDAO = new SuppliersDAO();
+                UnitsDAO unitDAO = new UnitsDAO();
 
-            Category category = categoryDAO.getCategoryById(product.getCategoryId());
-            if (category != null) {
-                product.setCategoryName(category.getName());
-            }
+                Category category = categoryDAO.getCategoryById(product.getCategoryId());
+                if (category != null) {
+                    product.setCategoryName(category.getName());
+                }
 
-            Suppliers supplier = supplierDAO.getSupplierById(product.getSupplierId());
-            if (supplier != null) {
-                product.setSupplierName(supplier.getName());
-            }
+                Suppliers supplier = supplierDAO.getSupplierById(product.getSupplierId());
+                if (supplier != null) {
+                    product.setSupplierName(supplier.getName());
+                }
 
-            Units unit = unitDAO.getUnitById(product.getUnitId());
-            if (unit != null) {
-                product.setUnitName(unit.getName());
-            }
+                Units unit = unitDAO.getUnitById(product.getUnitId());
+                if (unit != null) {
+                    product.setUnitName(unit.getName());
+                }
                 products.add(product);
             }
             rs.close();
@@ -119,6 +122,37 @@ public class ProductDAO extends DBcontext {
             e.printStackTrace();
         }
         return product;
+    }
+
+    public List<Product> getProducts(String sql) {
+        List<Product> productList = new ArrayList<>();
+        try {
+            Connection conn = DBcontext.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int productId = rs.getInt("product_id");
+                int categoryId = rs.getInt("category_id");
+                Integer supplierId = (Integer) rs.getObject("supplier_id");
+                Integer unitId = (Integer) rs.getObject("unit_id");
+                String name = rs.getString("name");
+                int discount = rs.getInt("discount");
+                String description = rs.getString("description");
+                Date createdAt = rs.getDate("created_at");
+                Date updatedAt = rs.getDate("updated_at");
+                int deleted = rs.getInt("deleted");
+                int price = rs.getInt("price");
+                Integer weight = (Integer) rs.getObject("weight");
+                int quantity = rs.getInt("quantity");
+                String imageUrl = rs.getString("imageUrl");
+
+                Product product = new Product(productId, categoryId, supplierId, unitId, name, discount, description, createdAt, updatedAt, deleted, price, weight, quantity, imageUrl);
+                productList.add(product);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return productList;
     }
 
     public List<Product> getProductsByCategory(int categotyId) {
@@ -213,29 +247,6 @@ public class ProductDAO extends DBcontext {
         return pro;
     }
 
-    public void insertProduct1(Product product) {
-        String query = "INSERT INTO [dbo].[Product]([category_id],[supplier_id],[unit_id] ,[name],[discount],[description],[created_at],[updated_at],[deleted],[price] ,[weight],[quantity])\n" +
-"     VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
-        try {
-            Connection conn = new DBcontext().getConnection();
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1, product.getCategoryId());
-            ps.setInt(2, product.getSupplierId());
-            ps.setInt(3, product.getUnitId());
-            ps.setString(4, product.getName());            
-            ps.setInt(5, product.getDiscount());
-            ps.setString(6, product.getDescription());
-            ps.setTimestamp(7, new java.sql.Timestamp(product.getCreatedAt().getTime()));
-            ps.setTimestamp(8, new java.sql.Timestamp(product.getUpdatedAt().getTime()));
-            ps.setInt(9, product.getDeleted());
-            ps.setInt(10, product.getPrice());
-            ps.setInt(11, product.getWeight());
-            ps.setInt(12, product.getQuantity());
-            ps.executeUpdate();
-        } catch (Exception e) {
-        }
-    }
-
     // Phương thức thêm sản phẩm và ảnh
     public boolean insertProduct(Product product, List<Images> images) {
         Connection conn = null;
@@ -271,7 +282,7 @@ public class ProductDAO extends DBcontext {
                     int productId = rs.getInt(1); // Lấy ID của sản phẩm vừa thêm
 
                     // Thêm ảnh vào bảng Images
-                    String sqlImage = "INSERT INTO Images (product_id, url, altText, createdAt) VALUES (?, ?, ?, ?)";
+                    String sqlImage = "INSERT INTO Images (product_id, url, alt_text, created_at) VALUES (?, ?, ?, ?)";
                     psImage = conn.prepareStatement(sqlImage);
 
                     for (Images image : images) {
@@ -298,10 +309,18 @@ public class ProductDAO extends DBcontext {
             }
         } finally {
             try {
-                if (rs != null) rs.close();
-                if (psProduct != null) psProduct.close();
-                if (psImage != null) psImage.close();
-                if (conn != null) conn.close();
+                if (rs != null) {
+                    rs.close();
+                }
+                if (psProduct != null) {
+                    psProduct.close();
+                }
+                if (psImage != null) {
+                    psImage.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -311,147 +330,136 @@ public class ProductDAO extends DBcontext {
     }
 
     public boolean updateProduct(Product product, List<Images> images) {
-    Connection conn = null;
-    PreparedStatement psProduct = null;
-    PreparedStatement psImage = null;
-    boolean result = false;
+        Connection conn = null;
+        PreparedStatement psProduct = null;
+        PreparedStatement psImage = null;
+        boolean result = false;
 
-    try {
-        conn = DBcontext.getConnection();
-        conn.setAutoCommit(false); // Bắt đầu transaction
+        try {
+            conn = DBcontext.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
 
-        // Cập nhật thông tin sản phẩm trong bảng Product
-        String sqlProduct = "UPDATE Product SET category_id = ?, supplier_id = ?, unit_id = ?, name = ?, discount = ?, description = ?, price = ?, weight = ?, quantity = ?, updated_at = ? WHERE product_id = ?";
-        psProduct = conn.prepareStatement(sqlProduct);
-        psProduct.setInt(1, product.getCategoryId());
-        psProduct.setObject(2, product.getSupplierId());
-        psProduct.setObject(3, product.getUnitId());
-        psProduct.setString(4, product.getName());
-        psProduct.setInt(5, product.getDiscount());
-        psProduct.setString(6, product.getDescription());
-        psProduct.setInt(7, product.getPrice());
-        psProduct.setObject(8, product.getWeight());
-        psProduct.setInt(9, product.getQuantity());
-        psProduct.setTimestamp(10, new java.sql.Timestamp(product.getUpdatedAt().getTime()));
-        psProduct.setInt(11, product.getProductId());
+            // Cập nhật thông tin sản phẩm trong bảng Product
+            String sqlProduct = "UPDATE Product SET category_id = ?, supplier_id = ?, unit_id = ?, name = ?, discount = ?, description = ?, price = ?, weight = ?, quantity = ?, updated_at = ? WHERE product_id = ?";
+            psProduct = conn.prepareStatement(sqlProduct);
+            psProduct.setInt(1, product.getCategoryId());
+            psProduct.setObject(2, product.getSupplierId());
+            psProduct.setObject(3, product.getUnitId());
+            psProduct.setString(4, product.getName());
+            psProduct.setInt(5, product.getDiscount());
+            psProduct.setString(6, product.getDescription());
+            psProduct.setInt(7, product.getPrice());
+            psProduct.setObject(8, product.getWeight());
+            psProduct.setInt(9, product.getQuantity());
+            psProduct.setTimestamp(10, new java.sql.Timestamp(product.getUpdatedAt().getTime()));
+            psProduct.setInt(11, product.getProductId());
 
-        int rowsAffected = psProduct.executeUpdate();
-        if (rowsAffected > 0) {
-            // Xóa các ảnh cũ của sản phẩm
+            int rowsAffected = psProduct.executeUpdate();
+            if (rowsAffected > 0) {
+                // Xóa các ảnh cũ của sản phẩm
+                String sqlDeleteImages = "DELETE FROM Images WHERE product_id = ?";
+                psImage = conn.prepareStatement(sqlDeleteImages);
+                psImage.setInt(1, product.getProductId());
+                psImage.executeUpdate();
+
+                // Thêm các ảnh mới vào bảng Images
+                String sqlInsertImage = "INSERT INTO Images (product_id, url, alt_text, created_at) VALUES (?, ?, ?, ?)";
+                psImage = conn.prepareStatement(sqlInsertImage);
+
+                for (Images image : images) {
+                    psImage.setInt(1, product.getProductId());
+                    psImage.setString(2, image.getUrl());
+                    psImage.setString(3, image.getAltText());
+                    psImage.setTimestamp(4, new java.sql.Timestamp(image.getCreatedAt().getTime()));
+                    psImage.addBatch();
+                }
+
+                psImage.executeBatch(); // Thực thi batch insert
+                conn.commit(); // Commit transaction
+                result = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                if (conn != null) {
+                    conn.rollback(); // Rollback nếu có lỗi
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } finally {
+            try {
+                if (psProduct != null) {
+                    psProduct.close();
+                }
+                if (psImage != null) {
+                    psImage.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return result;
+    }
+
+    public boolean deleteProduct(int productId) {
+        Connection conn = null;
+        PreparedStatement psProduct = null;
+        PreparedStatement psImage = null;
+        boolean result = false;
+
+        try {
+            conn = DBcontext.getConnection();
+            conn.setAutoCommit(false); // Bắt đầu transaction
+
+            // Xóa các ảnh liên quan đến sản phẩm
             String sqlDeleteImages = "DELETE FROM Images WHERE product_id = ?";
             psImage = conn.prepareStatement(sqlDeleteImages);
-            psImage.setInt(1, product.getProductId());
+            psImage.setInt(1, productId);
             psImage.executeUpdate();
 
-            // Thêm các ảnh mới vào bảng Images
-            String sqlInsertImage = "INSERT INTO Images (product_id, url, altText, createdAt) VALUES (?, ?, ?, ?)";
-            psImage = conn.prepareStatement(sqlInsertImage);
+            // Xóa sản phẩm khỏi bảng Product
+            String sqlDeleteProduct = "DELETE FROM Product WHERE product_id = ?";
+            psProduct = conn.prepareStatement(sqlDeleteProduct);
+            psProduct.setInt(1, productId);
 
-            for (Images image : images) {
-                psImage.setInt(1, product.getProductId());
-                psImage.setString(2, image.getUrl());
-                psImage.setString(3, image.getAltText());
-                psImage.setTimestamp(4, new java.sql.Timestamp(image.getCreatedAt().getTime()));
-                psImage.addBatch();
+            int rowsAffected = psProduct.executeUpdate();
+            if (rowsAffected > 0) {
+                conn.commit(); // Commit transaction
+                result = true;
             }
-
-            psImage.executeBatch(); // Thực thi batch insert
-            conn.commit(); // Commit transaction
-            result = true;
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-        try {
-            if (conn != null) {
-                conn.rollback(); // Rollback nếu có lỗi
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    } finally {
-        try {
-            if (psProduct != null) psProduct.close();
-            if (psImage != null) psImage.close();
-            if (conn != null) conn.close();
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    return result;
-}
-    public void updatedProduct(Product product) {
-        String query = "UPDATE [dbo].[Product] SET [category_id] =?,[supplier_id] = ?, [unit_id] = ?, [name] = ?, [discount] = ?,[description] = ?, [created_at] = ?,\n"
-                + "[updated_at] = ?, [deleted] = ?, [price] = ?, [weight] = ?,[quantity] = ? WHERE product_id = ?";
-        try {
-
-            Connection conn = new DBcontext().getConnection();
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setInt(1, product.getCategoryId());
-            ps.setInt(2, product.getSupplierId());
-            ps.setInt(3, product.getUnitId());
-            ps.setString(4, product.getName());
-            ps.setInt(5, product.getDiscount());
-            ps.setString(6, product.getDescription());
-            ps.setTimestamp(7, new java.sql.Timestamp(product.getCreatedAt().getTime()));
-            ps.setTimestamp(8, new java.sql.Timestamp(product.getUpdatedAt().getTime()));
-            ps.setInt(9, product.getDeleted());
-            ps.setInt(10, product.getPrice());
-            ps.setInt(11, product.getWeight());
-            ps.setInt(12, product.getQuantity());
-            ps.setInt(13, product.getProductId());
-            ps.executeUpdate();
-        } catch (Exception e) {
-        }
-    }
-    
-    public boolean deleteProduct(int productId) {
-    Connection conn = null;
-    PreparedStatement psProduct = null;
-    PreparedStatement psImage = null;
-    boolean result = false;
-
-    try {
-        conn = DBcontext.getConnection();
-        conn.setAutoCommit(false); // Bắt đầu transaction
-
-        // Xóa các ảnh liên quan đến sản phẩm
-        String sqlDeleteImages = "DELETE FROM Images WHERE product_id = ?";
-        psImage = conn.prepareStatement(sqlDeleteImages);
-        psImage.setInt(1, productId);
-        psImage.executeUpdate();
-
-        // Xóa sản phẩm khỏi bảng Product
-        String sqlDeleteProduct = "DELETE FROM Product WHERE product_id = ?";
-        psProduct = conn.prepareStatement(sqlDeleteProduct);
-        psProduct.setInt(1, productId);
-
-        int rowsAffected = psProduct.executeUpdate();
-        if (rowsAffected > 0) {
-            conn.commit(); // Commit transaction
-            result = true;
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-        try {
-            if (conn != null) {
-                conn.rollback(); // Rollback nếu có lỗi
+            try {
+                if (conn != null) {
+                    conn.rollback(); // Rollback nếu có lỗi
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        } finally {
+            try {
+                if (psProduct != null) {
+                    psProduct.close();
+                }
+                if (psImage != null) {
+                    psImage.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-    } finally {
-        try {
-            if (psProduct != null) psProduct.close();
-            if (psImage != null) psImage.close();
-            if (conn != null) conn.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+        return result;
     }
 
-    return result;
-}
     public void deletedProduct(int productId) {
         String query = "UPDATE Product SET deleted = 1 WHERE product_id = ?";
         try (java.sql.Connection conn = DBcontext.getConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
@@ -466,4 +474,27 @@ public class ProductDAO extends DBcontext {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    public static void main(String[] args) {
+//        Date createdAt = new Date(System.currentTimeMillis()); // Lấy ngày hiện tại
+////Date updatedAt = new Date(System.currentTimeMillis()); // Lấy ngày hiện tại
+////
+////        Product n = new Product(0, 2, 1, 1, "hung", 2, "ngon", createdAt, updatedAt, 0, 30000, 500, 32, "hreike");
+////        Images i = new Images(0, 7,0 ,0 , "https://dacsandalat.com.vn/wp-content/uploads/2024/07/qua-hong-1.jpg", "hồng", new Timestamp(new Date().getTime()));
+////        
+//
+//        List<Images> images = new ArrayList<>();
+//
+//        // Thêm một số ảnh vào danh sách
+//        images.add(new Images(0, 7, 0, 0, "https://example.com/image1.jpg", "huhu", new Timestamp(new Date().getTime())));
+//        images.add(new Images(0, 7, 0, 0, "https://example.com/image2.jpg", "hujooo", new Timestamp(new Date().getTime())));
+//        images.add(new Images(0, 7, 0, 0, "https://example.com/image3.jpg", "hejrrr", new Timestamp(new Date().getTime())));
+//
+//        // Khởi tạo sản phẩm
+//        Product n = new Product(10, 1, 2, 1, "mít sấy", 10, "Mô tả sản phẩm",
+//                new Date(), new Date(), 0, 100000, 500, 50, "anh");
+        ProductDAO dao = new ProductDAO();
+        // dao.updateProduct(n, images);
+        dao.deletedProduct(34);
+
+    }
 }

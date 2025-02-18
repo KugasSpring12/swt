@@ -30,8 +30,8 @@
                         <ul class="navbar-nav ms-auto">
                             <li class="nav-item dropdown">
                             <c:if test="${sessionScope.admin !=null}">
-                                <a href="admindetail" class="nav-icon pe-md-0">
-                                    <img src="${sessionScope.avatar}" class="avatar img-fluid" alt="Image of admin" style="border-radius: 20px">
+                                <a href="#" class="nav-icon pe-md-0">
+                                    <img src="${sessionScope.avatar}" class="avatar img-fluid" alt=" avatar" style="border-radius: 20px">
                                 </a>
                             </c:if>
                                 <div class="dropdown-menu dropdown-menu-end rounded">

@@ -30,10 +30,16 @@ public class deleteProductAdmin extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        String product_id = request.getParameter("product_id");
-        ProductDAO pdao = new ProductDAO();
-        pdao.deletedProduct(Integer.parseInt(product_id));
-          response.sendRedirect("listproductadmin");
+        ProductDAO dao = new ProductDAO();
+        String service=request.getParameter("service");
+            if (service.equals("delete")) {
+                dao.deletedProduct(Integer.parseInt(request.getParameter("pid")));
+                response.sendRedirect("listproductadmin");
+            }
+//        String product_id = request.getParameter("product_id");
+//        ProductDAO pdao = new ProductDAO();
+//        pdao.deletedProduct(Integer.parseInt(product_id));
+//          response.sendRedirect("listproductadmin");
 
         
     }

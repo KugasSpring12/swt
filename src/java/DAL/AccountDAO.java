@@ -8,6 +8,8 @@ import java.sql.Connection;
 import model.Account;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -55,6 +57,43 @@ public class AccountDAO {
 //        }
 //        return null;
 //    }
+    
+//    public Account login(String accountName, String password) {
+//        String sql = "SELECT * FROM [dbo].[Account] WHERE account_name = ? AND password = ?";
+//
+//        try (Connection conn = DBcontext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) { 
+//
+//            ps.setString(1, accountName);
+//            ps.setString(2, password);
+//
+//            try (ResultSet rs = ps.executeQuery()) { 
+//                if (rs.next()) {
+//                    System.out.println("Found user with ID: " + rs.getInt(1));
+//                    System.out.println("Role ID: " + rs.getInt(2));
+//
+//                    Account a = new Account(rs.getInt(1), rs.getInt(2), rs.getString(3),
+//                            rs.getString(4), rs.getString(5), rs.getString(6),
+//                            rs.getString(7), rs.getString(8), rs.getTimestamp(9),
+//                            rs.getTimestamp(10), rs.getInt(11), rs.getDate(12),
+//                            rs.getInt(13), rs.getString(14));
+//
+//                    String avatarUrl = rs.getString(14); 
+//                    if (avatarUrl == null || avatarUrl.isEmpty()) {
+//                        avatarUrl = "../../images/default_avatar.png"; // Ảnh mặc định nếu không có avatar
+//                    }
+//                    a.setAvatar(avatarUrl);
+//
+//                    return a;
+//                } else {
+//                    System.out.println("No user found with provided credentials");
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
+
     public Account login(String account_name, String password) {
         String sql = "select * from [dbo].[Account] where account_name  = ? and password  = ?";
         try {
@@ -209,6 +248,36 @@ public class AccountDAO {
         }
     }
 
+    public void updateadmin(Account account) {
+        String sql = "UPDATE [dbo].[Account] SET [fullname] = ?,[email] =  ? ,[phone_number] = ?,[address] = ?,[avatar] = ?,role_id = ? WHERE account_id=?";
+        try (
+                Connection conn = DBcontext.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, account.getFullname());
+            ps.setString(2, account.getEmail());
+            ps.setString(3, account.getPhone_number());
+            ps.setString(4, account.getAddress());
+            ps.setString(5, account.getAvatar());
+            ps.setInt(6, account.getRole_id());
+            ps.setInt(7, account.getAccount_id());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void changePassword(int account_id, String password) {
+        String query = "UPDATE [dbo].[Account] SET [password] = ?,[updated_at] = ? WHERE account_id=?";
+        try {
+            Connection conn = new DBcontext().getConnection();
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, password);
+            ps.setTimestamp(2, Timestamp.valueOf(LocalDateTime.now()));
+            ps.setInt(3, account_id);
+            ps.executeUpdate();
+        } catch (Exception e) {
+        }
+    }
+
     public Account getAccount(int account_id) {
         String query = "select * from Account where account_id= ?";
         try {
@@ -225,20 +294,21 @@ public class AccountDAO {
         }
         return null;
     }
+
     public static void main(String[] args) {
         Account a = new Account();
-        a.setAccount_id(7);
-        a.setFullname("Nguyễn Minh Quyền");
+        a.setAccount_id(9);
+        a.setFullname("Nguyễn Minh");
         a.setEmail("quanbhn@gmail.com");
         a.setPhone_number("0889501528");
-      a.setAccount_name("quan");
-       a.setPassword("123abc");
         a.setAddress("Ninh Buồn");
-        a.setGender(0);
-        a.setRole_id(3);
+        a.setAvatar("https://anhnail.com/wp-content/uploads/2024/11/Hinh-anh-gai-xinh-2k8-de-thuong.jpg");
+        a.setRole_id(1);
         AccountDAO accountDAO = new AccountDAO();
 //        
-        accountDAO.update(a);
+         accountDAO.updateadmin(a);
+       // accountDAO.changePassword(6, "6544");
+
 //        accountDAO.create(a);
 //            System.out.println(accountDAO.findById(2));
     }

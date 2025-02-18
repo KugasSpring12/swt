@@ -90,11 +90,12 @@
                                             <td>${Product.createdAt}</td>
                                             <td>${Product.updatedAt}</td>
                                             <td>
-                                                <a onclick="editProductInfo('${Product.productId}', '${Product.name}', '${Product.categoryId}','${Product.supplierId}','${Product.unitId}', '${Product.weight}',
+                                                <a onclick="editProductInfo('${Product.productId}', '${Product.name}', '${Product.categoryId}', '${Product.supplierId}', '${Product.unitId}', '${Product.weight}',
                                                                 '${Product.price}', '${Product.discount}', '${Product.description}', '${Product.quantity}')" style=" font-size: 15px; color: green" 
                                                    data-bs-toggle="modal" data-bs-target="#editProductModal" title="Edit"> <i class="lni lni-pencil"></i></a>
-                                                <a onclick="ProductInfo('${Product.productId}', '${Product.name}')" style=" font-size: 15px; color: red"
-                                                   data-bs-toggle="modal" data-bs-target="#deleteProductModal" title="Delete"> <i class="lni lni-trash-can"></i></a>
+<!--                                                <a onclick="ProductInfo('${Product.productId}', '${Product.name}')" style=" font-size: 15px; color: red"
+                                                   data-bs-toggle="modal" data-bs-target="#deleteProductModal" title="Delete"> </a>-->
+                                                <a href="deleteProductAdmin?service=delete&pid=${Product.productId}"><i class="lni lni-trash-can"></i></a>
                                             </td>
                                         </tr>   
                                     </c:forEach>
@@ -118,7 +119,7 @@
                         <div class="modal-body">					
                             <div class="form-group">
                                 <label>Name</label>
-                                <input name="name" type="text" class="form-control" value="${Product.name}" required>
+                                <input name="name" type="text" class="form-control" required>
                             </div>
                             <div class="form-group">
                                 <label>Category:</label>
@@ -145,8 +146,19 @@
                                 </select>
                             </div>
                             <div class="form-group">
+                                <label>Images</label>
+                                <div id="imageFields">
+                                    <div class="image-input mb-2">
+                                        <input type="text" name="imageUrl" class="form-control mb-1" placeholder="Image URL" required>
+                                        <input type="text" name="altText" class="form-control mb-1" placeholder="Alt Text" required>
+                                        <button type="button" class="btn btn-danger btn-sm remove-image">Remove</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm" id="addImage">Add Image</button>
+                            </div>
+                            <div class="form-group">
                                 <label>Weight</label>
-                                <input name="weight" value="${Product.weight}" type="text" class="form-control" placeholder="g" required>
+                                <input name="weight" type="text" class="form-control" placeholder="g" required>
                             </div>
                             <div class="form-group">
                                 <label>Price</label>
@@ -164,7 +176,7 @@
                                 <label>Description</label>
                                 <textarea name="description" type="text" class="form-control" required></textarea>
                             </div>
-                            
+
                         </div>
                         <div class="modal-footer">
                             <input type="button" class="btn btn-default" data-bs-dismiss="modal" value="Cancel">
@@ -240,24 +252,35 @@
                                 </select>
                             </div>
                             <div class="form-group">
+                                <label>Images</label>
+                                <div id="imageFields">
+                                    <div class="image-input mb-2">
+                                        <input type="text" name="imageUrl" class="form-control mb-1" placeholder="Image URL" required>
+                                        <input type="text" name="altText" class="form-control mb-1" placeholder="Alt Text" required>
+                                        <button type="button" class="btn btn-danger btn-sm remove-image">Remove</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-primary btn-sm" id="addImage">Add Image</button>
+                            </div>
+                            <div class="form-group">
                                 <label>Weight</label>
-                                <input name="weight" type="text" class="form-control" id="weightInput2" placeholder="g" required>
+                                <input name="weight" type="number" class="form-control" id="weightInput2" placeholder="g"  required>
                             </div>
                             <div class="form-group">
                                 <label>Price</label>
-                                <input name="price" type="text" class="form-control" id="priceInput2" placeholder="VND" required>
+                                <input name="price" type="number" class="form-control" id="priceInput2" placeholder="VND"    required>
                             </div>
                             <div class="form-group">
                                 <label>Discount</label>
-                                <input name="discount" type="text" class="form-control" id="discountInput2" placeholder="%" required>
+                                <input name="discount" type="number" class="form-control" id="discountInput2" placeholder="%"   required>
                             </div>
                             <div class="form-group">
                                 <label>Quantity</label>
-                                <input name="quantity" type="text" class="form-control" id="quantity2" required>
+                                <input name="quantity" type="number" class="form-control" id="quantity2"   required>
                             </div>
                             <div class="form-group">
                                 <label>Description</label>
-                                <textarea name="description" type="text" class="form-control" id="description2" required></textarea>
+                                <textarea name="description" type="text" class="form-control" id="description2"   required></textarea>
                             </div>   
                         </div>
                         <div class="modal-footer">
@@ -270,12 +293,13 @@
         </div>
 
         <script>
-            function ProductInfo(product_id, name) {
-                document.getElementById('product_idInput').value = product_id;
+            function ProductInfo(productId, name) {
+                document.getElementById('product_idInput').value = productId;
                 document.getElementById('product_nameInput').textContent = name;
             }
 
-            function editProductInfo(product_id, name, category_id, supplier_id, unit_id, weight, price, discount, description, quantity) {
+            function editProductInfo(product_id, name, category_id, supplier_id, unit_id, weight, price, discount, description, quantity, imagesJson) {
+                // Điền thông tin cơ bản
                 document.getElementById('product_idInput2').value = product_id;
                 document.getElementById('nameInput2').value = name;
                 document.getElementById('category_idInput2').value = category_id;
@@ -286,8 +310,60 @@
                 document.getElementById('discountInput2').value = discount;
                 document.getElementById('quantity2').value = quantity;
                 document.getElementById('description2').value = description;
-                
+
+                // Xử lý ảnh
+                const imageFieldsEdit = document.getElementById('imageFieldsEdit');
+                imageFieldsEdit.innerHTML = '';
+                if (imagesJson) {
+                    const images = JSON.parse(imagesJson);
+                    images.forEach(image => {
+                        const newImageField = document.createElement('div');
+                        newImageField.className = 'image-input mb-2';
+                        newImageField.innerHTML = `
+                    <input type="text" name="imageUrl" class="form-control mb-1" value="${image.url}" placeholder="Image URL" required>
+                    <input type="text" name="altText" class="form-control mb-1" value="${image.altText}" placeholder="Alt Text" required>
+                    <button type="button" class="btn btn-danger btn-sm remove-image">Remove</button>
+                `;
+                        imageFieldsEdit.appendChild(newImageField);
+                    });
+                }
             }
+
+            }
+        </script>
+        <script>
+            // Xử lý thêm ảnh cho modal thêm sản phẩm
+            document.getElementById('addImage').addEventListener('click', function () {
+                const imageFields = document.getElementById('imageFields');
+                const newImageField = document.createElement('div');
+                newImageField.className = 'image-input mb-2';
+                newImageField.innerHTML = `
+            <input type="text" name="imageUrl" class="form-control mb-1" placeholder="Image URL" required>
+            <input type="text" name="altText" class="form-control mb-1" placeholder="Alt Text" required>
+            <button type="button" class="btn btn-danger btn-sm remove-image">Remove</button>
+        `;
+                imageFields.appendChild(newImageField);
+            });
+
+            // Xử lý thêm ảnh cho modal sửa sản phẩm
+            document.getElementById('addImageEdit').addEventListener('click', function () {
+                const imageFieldsEdit = document.getElementById('imageFieldsEdit');
+                const newImageField = document.createElement('div');
+                newImageField.className = 'image-input mb-2';
+                newImageField.innerHTML = `
+            <input type="text" name="imageUrl" class="form-control mb-1" placeholder="Image URL" required>
+            <input type="text" name="altText" class="form-control mb-1" placeholder="Alt Text" required>
+            <button type="button" class="btn btn-danger btn-sm remove-image">Remove</button>
+        `;
+                imageFieldsEdit.appendChild(newImageField);
+            });
+
+            // Xử lý xóa trường ảnh
+            document.addEventListener('click', function (e) {
+                if (e.target && e.target.classList.contains('remove-image')) {
+                    e.target.closest('.image-input').remove();
+                }
+            });
         </script>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"

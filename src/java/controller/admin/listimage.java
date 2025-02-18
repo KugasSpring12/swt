@@ -5,7 +5,8 @@
 
 package controller.admin;
 
-import DAL.AccountDAO;
+import DAL.ImagesDAO;
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
@@ -13,17 +14,16 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import java.sql.Date;
-import model.Account;
+import java.util.List;
+import model.Images;
 
 /**
  *
  * @author BT
  */
-@WebServlet(name="updateAdmindetail", urlPatterns={"/admin/updateadmindetail"})
-public class updateAdmindetail extends HttpServlet {
-   
+@WebServlet(name="listimage", urlPatterns={"/admin/listimage"})
+public class listimage extends HttpServlet {
+    private ImagesDAO imagesDAO = new ImagesDAO();
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      * @param request servlet request
@@ -34,30 +34,18 @@ public class updateAdmindetail extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-        String account_id = request.getParameter("account_id");
-        String fullname = request.getParameter("fullname");
-        String email = request.getParameter("email");
-        String phonenumber = request.getParameter("phonenumber");
-        String address = request.getParameter("address");
-        String img = request.getParameter("img");
-        Account admin = new Account();
-        admin.setAccount_id(Integer.parseInt(account_id));
-        admin.setFullname(fullname);
-        admin.setEmail(email);
-        admin.setPhone_number(phonenumber);
-        admin.setAddress(address);
-        admin.setAvatar(img);
-        AccountDAO dao = new AccountDAO();
-        dao.update(admin);
-
-//        Account account_updated = dao.getAccount(Integer.parseInt(admin_id));
-//
-//        HttpSession session = request.getSession();
-//        session.removeAttribute("admin");
-//
-//        session.setAttribute("admin", account_updated);
-        response.sendRedirect("admindetail");
-        
+        try (PrintWriter out = response.getWriter()) {
+            /* TODO output your page here. You may use following sample code. */
+            out.println("<!DOCTYPE html>");
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>Servlet listimage</title>");  
+            out.println("</head>");
+            out.println("<body>");
+            out.println("<h1>Servlet listimage at " + request.getContextPath () + "</h1>");
+            out.println("</body>");
+            out.println("</html>");
+        }
     } 
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
@@ -71,7 +59,24 @@ public class updateAdmindetail extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
     throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            // Lấy productId từ request
+            int productId = Integer.parseInt(request.getParameter("productId"));
+
+            // Gọi DAO để lấy danh sách ảnh của sản phẩm
+            List<Images> images = imagesDAO.getImagesByProductId(productId);
+
+            // Chuyển danh sách ảnh sang JSON
+            Gson gson = new Gson();
+            String json = gson.toJson(images);
+
+            // Trả về JSON
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(json);
+        } catch (Exception e) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid Product ID");
+        }
     } 
 
     /** 

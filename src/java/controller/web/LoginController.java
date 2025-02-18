@@ -88,9 +88,11 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
         request.setAttribute("errorMessage", "Sai mật khẩu hoặc tài khoản!");
         request.getRequestDispatcher("login.jsp").forward(request, response);
     } else {
-        if (u.getRole_id() == 1 || u.getDeleted() == 1) {
-            request.setAttribute("errorMessage", "Sai mật khẩu hoặc tài khoản!");
-            request.getRequestDispatcher("login.jsp").forward(request, response);
+        if (u.getRole_id() == 1 ) {
+            HttpSession session = request.getSession();
+                session.setAttribute("admin", u);
+                session.setAttribute("avatar", u.getAvatar());
+                response.sendRedirect("dashboardadmin");
         } else if (u.getRole_id() == 3) {
             HttpSession session = request.getSession(true);
             session.setAttribute("account", u);
